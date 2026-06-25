@@ -1,9 +1,6 @@
 import requests
 import time
 
-# =====================================================================
-# STEP 1: GLOBAL CONFIGURATION
-# =====================================================================
 BASE_URL = "https://qa-testing-navy.vercel.app"
 STATIC_ID = "sit24it031"
 CANDIDATE_ID = f"{STATIC_ID}_{int(time.time())}"
@@ -35,18 +32,13 @@ def run_automation_test():
     video_id = None
     
     try:
-        # -----------------------------------------------------------------
-        # PHASE 1: AUTHENTICATION
-        # -----------------------------------------------------------------
         print("\n🔐 Phase 1: Authenticating with server...")
         if not authenticate(session):
             print("❌ Initial Authentication Failed!")
             return
         print("✅ Authentication Successful! Token retrieved.")
 
-        # -----------------------------------------------------------------
-        # PHASE 2: CREATE VIDEO RECORD
-        # -----------------------------------------------------------------
+
         print("\n📹 Phase 2: Registering a new video record...")
         video_url = f"{BASE_URL}/api/videos"
         video_payload = {
@@ -63,9 +55,7 @@ def run_automation_test():
             print(f"❌ Failed to create video record! Status code: {create_response.status_code}")
             return
 
-        # -----------------------------------------------------------------
-        # PHASE 3: TRIGGER & MONITOR CAPTION PROCESSING
-        # -----------------------------------------------------------------
+
         print(f"\n⚙️ Phase 3: Triggering caption rendering pipeline for Video {video_id}...")
         process_url = f"{BASE_URL}/api/videos/{video_id}/process-captions"
         process_response = session.post(process_url)
@@ -75,8 +65,7 @@ def run_automation_test():
             print("⏳ Monitoring live processing status...")
             
             is_processed = False
-            # We use a larger pool of checks with NO sleeping delay to hit the server 
-            # rapidly before the short-lived session token expires.
+
             for attempt in range(30):
                 status_response = session.get(f"{BASE_URL}/api/videos/{video_id}")
                 
@@ -109,9 +98,6 @@ def run_automation_test():
         print(f"\n🚨 Exception intercepted during runtime execution: {e}")
         
     finally:
-        # -----------------------------------------------------------------
-        # PHASE 4: TEARDOWN / CLEAN UP
-        # -----------------------------------------------------------------
         if video_id:
             print(f"\n🧹 Phase 4: Commencing database cleanup for Video {video_id}...")
             delete_url = f"{BASE_URL}/api/videos/{video_id}"
